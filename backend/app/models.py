@@ -64,16 +64,6 @@ class Course(models.Model):
          return self.name
     
 
-# tuition complaint 
-class TuitionComplaint(CommonComplaintIssue):
-    subject = models.CharField(max_length=100)
-    details = models.TextField()
-    attachment = models.FileField(upload_to="static/uploads/attachments")
-    
-    def __str__(self):
-        return self.subject[0:20]
-    
-
 # missing marks complaint   
 class MissingMarksComplaint(CommonComplaintIssue):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
@@ -104,6 +94,20 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.body[0:20]
+    
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Password reset token for {self.user.email}"
     
 
   

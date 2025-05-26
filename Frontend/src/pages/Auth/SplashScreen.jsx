@@ -1,39 +1,181 @@
-import { ArrowRight } from "@material-ui/icons"
-import { Button, Container, Paper, Typography } from "@mui/material"
-import { useSelector } from "react-redux"
-import { Navigate, useNavigate } from "react-router-dom"
-import { getAuthInformation } from "../../model/tools/AuthReducer"
-import { motion } from "framer-motion"
-const SplashScreen=()=>{
-    const navigate = useNavigate()
-    const auth = useSelector(getAuthInformation)
-    return(
-      <>
-      {
-        auth?.user?.isLoggedIn
-        ?
-        <Navigate to={`/${auth?.user?.role}`}/>
-        :
-        <Container maxWidth={"xs"} className=" py-5">
-        <motion.div 
-        initial={{y: 200, opacity:0}}
-        animate={{y: 0, opacity: 1}}
-        exit={{y: 100, opacity:0}}
+import { ArrowRight } from "@material-ui/icons";
+import {
+  Box,
+  Button,
+  Container,
+  Paper,
+  Typography,
+  useTheme,
+  useMediaQuery,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import Logo from "../../assets/svgs/muk.svg";
+import { useEffect } from "react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+  exit: {
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeIn",
+    },
+  },
+};
+
+const SplashScreen = () => {
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  useEffect(() => {
+    // Only navigate after a delay
+    const timer = setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        variants={containerVariants}
+        style={{ width: "100%", height: "100%" }}
+      >
+        <Box
+          sx={{
+            minHeight: "100vh",
+            width: "100vw",
+            backgroundImage: `url(${"https://images.pexels.com/photos/8892/pexels-photo.jpg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            position: "relative",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.28)",
+              zIndex: 1,
+            },
+          }}
         >
-        <Typography variant="h4" sx={{mt:5}} textTransform={"uppercase"} textAlign={"center"}  fontFamily={"serif"}>Welcome!</Typography>
-        <Paper sx={{p:4, my:3}} elevation={0}>
-            <Typography textAlign={"center"} textTransform={"uppercase"} lineHeight={4} fontWeight={"bold"}>Web-based Complaint Monitoring system</Typography>
-            <Typography className="text-secondary" variant="caption" lineHeight={2} textAlign={"justify"}>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Numquam fugit at saepe porro. Praesentium minus alias nam, nemo neque et recusandae magnam, unde eveniet delectus, ipsa ad exercitationem accusantium? Adipisci ab temporibus totam fuga sed ullam ratione exercitationem dolorem laborum ipsum quis placeat et, quam inventore maxime praesentium quos autem assumenda dolore nobis recusandae aperiam perspiciatis. Magnam laboriosam 
-            </Typography>
-        </Paper>
-        <Button onClick={()=>navigate('/login')} color="primary" variant={"contained"} className="w-100" endIcon={<ArrowRight/>}>
-            Proceed to site
-        </Button>
-        </motion.div>
-    </Container>
-      }
-      </>
-    )
-}
-export default SplashScreen
+          <Container
+            maxWidth="lg"
+            sx={{
+              position: "relative",
+              zIndex: 2,
+              height: "100vh",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              py: 4,
+            }}
+          >
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              style={{ width: "100%", maxWidth: isMobile ? "100%" : "600px" }}
+            >
+              <Paper
+                elevation={0}
+                sx={{
+                  p: isMobile ? 3 : 5,
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  backdropFilter: "blur(10px)",
+                  borderRadius: "16px",
+                  boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={Logo}
+                  alt="Makerere University Logo"
+                  sx={{
+                    width: isMobile ? "120px" : "250px",
+                    height: "auto",
+                    display: "block",
+                    margin: "0 auto 2rem",
+                  }}
+                />
+
+                <Typography
+                  variant={isMobile ? "h5" : "h4"}
+                  sx={{
+                    textAlign: "center",
+                    mb: 2,
+                    fontWeight: 600,
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  Welcome to WBCMS
+                </Typography>
+
+                <Typography
+                  variant={isMobile ? "h6" : "h5"}
+                  sx={{
+                    textAlign: "center",
+                    mb: 3,
+                    fontWeight: 500,
+                    color: theme.palette.text.secondary,
+                  }}
+                >
+                  Web-based Complaint Monitoring System
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: "center",
+                    mb: 4,
+                    color: theme.palette.text.secondary,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  A comprehensive platform for managing and tracking academic
+                  and administrative complaints at Makerere University.
+                  Streamline your complaint process and ensure timely resolution
+                  of issues.
+                </Typography>
+
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  endIcon={<ArrowRight />}
+                  sx={{
+                    py: 1.5,
+                    fontSize: "1.1rem",
+                    borderRadius: "8px",
+                  }}
+                >
+                  Get Started
+                </Button>
+              </Paper>
+            </motion.div>
+          </Container>
+        </Box>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+export default SplashScreen;

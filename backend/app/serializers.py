@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, EmailField, CharField
-from .models import User, Course, Programme, TuitionComplaint, AcademicYear, Notification, MissingMarksComplaint, RegistrationComplaint
+from .models import User, Course, Programme, AcademicYear, Notification, MissingMarksComplaint, RegistrationComplaint
 
 class UserSerializer(ModelSerializer):
     class Meta:
@@ -17,15 +17,6 @@ class CourseSerializer(ModelSerializer):
 class ProgrammeSerializer(ModelSerializer):
     class Meta:
         model = Programme
-        fields = '__all__'
-
-class TuitionComplaintSerializer(ModelSerializer):
-    year = CharField(source = "academic_year.title", read_only = True)
-    registration_number = CharField(source = "student.registration_number", read_only = True)
-    student_number = CharField(source = "student.student_number", read_only = True)
-    email = CharField(source = "student.email", read_only = True)
-    class Meta:
-        model = TuitionComplaint
         fields = '__all__'
 
 class RegistrationComplaintSerializer(ModelSerializer):

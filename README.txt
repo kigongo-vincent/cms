@@ -15,10 +15,16 @@ run py manage.py makemigrations app
 run py manage.py migrate
 
 run py manage.py createsuperuser
+email: admin@gmail.com
+password: Admin@2024
 
 follow the prompts provided to create the admin user of the app
 
 ======================= end backend config ====================
+
+frontend 
+    cd to frontend
+    npm install --force
 
 
 

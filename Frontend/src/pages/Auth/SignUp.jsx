@@ -13,42 +13,128 @@ import {
 } from "@mui/material";
 import Logo from "../../assets/svgs/muk.svg";
 import { ArrowRight, Close } from "@material-ui/icons";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
-import { Navigate, useNavigate, useLocation } from "react-router-dom";
-import { getAuthInformation, SignIn } from "../../model/tools/AuthReducer";
+import { Navigate, useNavigate } from "react-router-dom";
+import {
+  getAuthInformation,
+  SignUp,
+  SignIn,
+  removeAuthError,
+} from "../../model/tools/AuthReducer";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Login = () => {
+const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
   const auth = useSelector(getAuthInformation);
 
-  // Show success message if redirected from password reset
-  const [successMessage, setSuccessMessage] = useState(location.state?.message);
-
-  useEffect(() => {
-    // Clear success message after 5 seconds
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(null), 5000);
-      return () => clearTimeout(timer);
+  const validateEmail = (email) => {
+    const allowedDomains = ["students.mak.ac.ug", "cit.mak.ac.ug"];
+    const domain = email.split("@")[1];
+    if (!email) {
+      return "Email is required";
     }
-  }, [successMessage]);
+    if (!allowedDomains.includes(domain)) {
+      return "Email must be from students.mak.ac.ug or cit.mak.ac.ug";
+    }
+    return "";
+  };
+
+  const validatePassword = (password) => {
+    const errors = [];
+    if (!password) {
+      return "Password is required";
+    }
+    if (password.length < 8) {
+      errors.push("Password must be at least 8 characters long");
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Password must contain at least one uppercase letter");
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Password must contain at least one lowercase letter");
+    }
+    if (!/[0-9]/.test(password)) {
+      errors.push("Password must contain at least one number");
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push(
+        "Password must contain at least one special character (!@#$%^&*)"
+      );
+    }
+    return errors.join(". ");
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setEmailError(validateEmail(value));
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    setPasswordError(validatePassword(value));
+    if (confirmPassword && value !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    if (value !== password) {
+      setConfirmPasswordError("Passwords do not match");
+    } else {
+      setConfirmPasswordError("");
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate all fields
+    const emailValidationError = validateEmail(email);
+    const passwordValidationError = validatePassword(password);
+    const confirmPasswordValidationError =
+      password !== confirmPassword ? "Passwords do not match" : "";
+
+    setEmailError(emailValidationError);
+    setPasswordError(passwordValidationError);
+    setConfirmPasswordError(confirmPasswordValidationError);
+
+    // If there are any validation errors, don't submit
+    if (
+      emailValidationError ||
+      passwordValidationError ||
+      confirmPasswordValidationError
+    ) {
+      return;
+    }
+
     try {
-      const result = await dispatch(SignIn({ email, password })).unwrap();
-      // Get the intended destination from location state or default to role-based route
-      const intendedDestination =
-        location.state?.from || `/${result.data.user.role}`;
-      navigate(intendedDestination, { replace: true });
+      // First sign up
+      const signupResult = await dispatch(SignUp({ email, password })).unwrap();
+
+      // Then sign in to get the tokens
+      const signinResult = await dispatch(SignIn({ email, password })).unwrap();
+
+      // Navigate to the appropriate dashboard
+      navigate(`/${signinResult.data.user.role}`, { replace: true });
     } catch (error) {
+      console.error("Signup error:", error);
       // Error is handled by the reducer
     }
   };
@@ -113,33 +199,22 @@ const Login = () => {
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
                 <Typography variant="h5" sx={{ mt: 3, mb: 2 }}>
-                  Welcome Back
+                  Create Account
                 </Typography>
                 <Typography
                   variant="body1"
                   color="text.secondary"
                   sx={{ mb: 4 }}
                 >
-                  Sign in to continue to your account
+                  Sign up to get started with your account
                 </Typography>
               </motion.div>
 
-              <AnimatePresence>
-                {successMessage && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <Alert severity="success" sx={{ mb: 3 }}>
-                      {successMessage}
-                    </Alert>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <form onSubmit={handleSubmit} autoComplete="off">
+              <form
+                onSubmit={handleSubmit}
+                autoComplete="off"
+                onClick={() => console.log("Form clicked")}
+              >
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -147,14 +222,19 @@ const Login = () => {
                 >
                   <TextField
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    helperText="Enter your email address"
+                    onChange={handleEmailChange}
+                    error={!!emailError}
+                    helperText={
+                      emailError ||
+                      "Enter your email address (students.mak.ac.ug or cit.mak.ac.ug)"
+                    }
                     label="Email"
                     type="email"
                     required
                     fullWidth
                     className="mt-4"
                     autoComplete="off"
+                    disabled={auth.loading}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -172,14 +252,18 @@ const Login = () => {
                 >
                   <TextField
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    helperText="Enter your password"
+                    onChange={handlePasswordChange}
+                    error={!!passwordError}
+                    helperText={
+                      passwordError || "Enter a password (minimum 8 characters)"
+                    }
                     label="Password"
                     type={showPassword ? "text" : "password"}
                     required
                     fullWidth
                     className="mt-4"
                     autoComplete="new-password"
+                    disabled={auth.loading}
                     sx={{
                       "& .MuiOutlinedInput-root": {
                         "& fieldset": {
@@ -193,6 +277,7 @@ const Login = () => {
                           <IconButton
                             onClick={() => setShowPassword(!showPassword)}
                             edge="end"
+                            disabled={auth.loading}
                           >
                             {showPassword ? <FaEyeSlash /> : <FaEye />}
                           </IconButton>
@@ -207,20 +292,41 @@ const Login = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.8 }}
                 >
-                  <Box sx={{ mt: 2, mb: 3 }}>
-                    <Link
-                      component="button"
-                      type="button"
-                      variant="body2"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate("/forgot-password", { replace: true });
-                      }}
-                      sx={{ textDecoration: "none" }}
-                    >
-                      Forgot Password?
-                    </Link>
-                  </Box>
+                  <TextField
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    error={!!confirmPasswordError}
+                    helperText={confirmPasswordError || "Confirm your password"}
+                    label="Confirm Password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    fullWidth
+                    className="mt-4"
+                    autoComplete="new-password"
+                    disabled={auth.loading}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "& fieldset": {
+                          borderWidth: "1px",
+                        },
+                      },
+                    }}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            edge="end"
+                            disabled={auth.loading}
+                          >
+                            {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
                 </motion.div>
 
                 <motion.div
@@ -235,9 +341,11 @@ const Login = () => {
                     size="large"
                     fullWidth
                     disableElevation
+                    sx={{ mt: 3 }}
                     endIcon={<ArrowRight />}
+                    onClick={() => console.log("Button clicked")}
                   >
-                    {auth.loading ? <CircularProgress size={20} /> : "Sign In"}
+                    {auth.loading ? <CircularProgress size={20} /> : "Sign Up"}
                   </Button>
                 </motion.div>
 
@@ -248,18 +356,18 @@ const Login = () => {
                 >
                   <Box sx={{ mt: 3 }}>
                     <Typography variant="body2" color="text.secondary">
-                      Don't have an account?{" "}
+                      Already have an account?{" "}
                       <Link
                         component="button"
                         type="button"
                         variant="body2"
                         onClick={(e) => {
                           e.preventDefault();
-                          navigate("/signup", { replace: true });
+                          navigate("/login", { replace: true });
                         }}
                         sx={{ textDecoration: "none" }}
                       >
-                        Sign Up
+                        Sign In
                       </Link>
                     </Typography>
                   </Box>
@@ -279,16 +387,16 @@ const Login = () => {
                       sx={{ mt: 3 }}
                       action={
                         <IconButton
-                          onClick={() =>
-                            dispatch({ type: "auth/removeAuthError" })
-                          }
+                          aria-label="close"
+                          color="inherit"
                           size="small"
+                          onClick={() => dispatch(removeAuthError())}
                         >
-                          <Close />
+                          <Close fontSize="inherit" />
                         </IconButton>
                       }
                     >
-                      <Typography>{auth.error}</Typography>
+                      {auth.error}
                     </Alert>
                   </motion.div>
                 )}
@@ -301,4 +409,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUpPage;

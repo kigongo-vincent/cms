@@ -15,10 +15,6 @@ const Index = () => {
         {
             path: "registration",
             name: "Registration issues"
-        },
-        {
-            name: "Tuition issues",
-            path: "tuition"
         }])
 
         const [statistics, setStatistics] = useState(null)
