@@ -119,7 +119,7 @@ const Navbar = () => {
             className="text-secondary"
             letterSpacing={1}
           >
-            WBCMS
+            Complaint Monitoring System
           </Typography>
           {/* end brand logo  */}
 

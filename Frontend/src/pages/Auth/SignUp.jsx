@@ -188,9 +188,14 @@ const SignUpPage = () => {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                width={250}
                 src={Logo}
-                alt="Logo"
+                alt="Makerere University Logo"
+                style={{
+                  width: "180px",
+                  height: "auto",
+                  marginBottom: "1rem",
+                  filter: "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               <motion.div
@@ -198,7 +203,15 @@ const SignUpPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <Typography variant="h5" sx={{ mt: 3, mb: 2 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mt: 2,
+                    mb: 1,
+                    fontWeight: 600,
+                    color: "primary.main",
+                  }}
+                >
                   Create Account
                 </Typography>
                 <Typography

@@ -1,7 +1,8 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit'
 
 const initialState ={
-    URL: "http://localhost:8000",
+    // URL: "http://localhost:8000",
+  URL: "https://tekjuicemail.pythonanywhere.com",
     programmes: {
         items: [],
         loading: false

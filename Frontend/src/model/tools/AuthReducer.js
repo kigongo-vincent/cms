@@ -22,7 +22,8 @@ const loadSavedUser = () => {
 const savedUser = loadSavedUser();
 
 const initialState = {
-  URL: "http://localhost:8000",
+  // URL: "http://localhost:8000",
+  URL: "https://tekjuicemail.pythonanywhere.com",
   loading: false,
   error: false,
   is_open: false,
